@@ -11,7 +11,7 @@ export default function Aktivitas() {
           <Link href="/Dashboard" className="inline-block transition-transform duration-300 hover:-translate-y-1 hover:opacity-80 ">Dashboard</Link>
           <Link href="/Kalkulator" className="inline-block transition-transform duration-300 hover:-translate-y-1 hover:opacity-80 ">KKM</Link>
           <Link href="/Statistik" className="inline-block transition-transform duration-300 hover:-translate-y-1 hover:opacity-80 ">Statistik</Link>
-          <Link href="/Aktivitas" className="inline-block transition-transform duration-300 hover:-translate-y-1 font-bold border-b-2 border-black">KKA</Link>
+          <Link href="/Aktivitas" className="inline-block transition-transform duration-300 hover:-translate-y-1 font-bold border-b-2 border-black">KKL</Link>
         </div>
       </section>
         <div className='font-bold text-4xl flex justify-center text-yellow-400'>Aktivitas</div>

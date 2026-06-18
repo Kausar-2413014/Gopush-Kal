@@ -12,8 +12,9 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4">
       {/* Header / Logo */}
-      <div className="mb-8 text-center">
-        <h1 className="text-4xl font-bold text-yellow-400 tracking-wider flex items-center justify-center gap-2">
+      <div className="mb-8 text-center flex gap-2">
+        <img src="Logo Gopushkal.jpeg" className="w-20 h-20" />
+        <h1 className="text-4xl font-bold text-yellow-400 tracking-wider flex items-center justify-center gap-2 italic">
           GOPUSHKAL
         </h1>
       </div>

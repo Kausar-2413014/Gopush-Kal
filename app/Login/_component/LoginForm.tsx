@@ -18,6 +18,18 @@ export default function LoginForm({ onSwitchMode }: LoginFormProps) {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMsg(""); // Kosongkan pesan error setiap kali tombol ditekan
+
+    // ========================================================
+    // FITUR RAHASIA: DEVELOPER MODE BYPASS DITARUH DI SINI
+    // ========================================================
+    if (formData.username === "AdminWeb" && formData.password === "gopush-kal") {
+      alert("🔑 Developer Mode Terdeteksi! Mengalihkan ke Developer Setting...");
+      router.push("/DeveloperSetting");
+      return; // Berhenti di sini, jangan lanjutkan mengecek user biasa
+    }
+    // ========================================================
+
     const storedUsers = localStorage.getItem("gopushkal_users");
     
     if (storedUsers) {
@@ -50,12 +62,28 @@ export default function LoginForm({ onSwitchMode }: LoginFormProps) {
 
       <div>
         <label className="text-yellow-400 text-sm font-semibold mb-1 block">Username</label>
-        <input type="text" name="username" value={formData.username} onChange={handleChange} className="w-full bg-black border border-gray-700 text-white px-4 py-2 rounded focus:outline-none focus:border-yellow-400 transition-colors" placeholder="Masukkan username" required />
+        <input 
+          type="text" 
+          name="username" 
+          value={formData.username} 
+          onChange={handleChange} 
+          className="w-full bg-black border border-gray-700 text-white px-4 py-2 rounded focus:outline-none focus:border-yellow-400 transition-colors" 
+          placeholder="Masukkan username" 
+          required 
+        />
       </div>
 
       <div>
         <label className="text-yellow-400 text-sm font-semibold mb-1 block">Password</label>
-        <input type="password" name="password" value={formData.password} onChange={handleChange} className="w-full bg-black border border-gray-700 text-white px-4 py-2 rounded focus:outline-none focus:border-yellow-400 transition-colors" placeholder="••••••••" required />
+        <input 
+          type="password" 
+          name="password" 
+          value={formData.password} 
+          onChange={handleChange} 
+          className="w-full bg-black border border-gray-700 text-white px-4 py-2 rounded focus:outline-none focus:border-yellow-400 transition-colors" 
+          placeholder="••••••••" 
+          required 
+        />
       </div>
 
       <button type="submit" className="w-full bg-yellow-400 text-black font-bold py-3 rounded mt-2 hover:bg-yellow-500 transition-colors">

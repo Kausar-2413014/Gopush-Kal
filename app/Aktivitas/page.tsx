@@ -30,6 +30,20 @@ export default function AktivitasPage() {
     setSessionTotals(updatedTotals);
   };
 
+  // State untuk mengontrol dropdown menu garis 3
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  // Fungsi khusus untuk Logout
+  const handleLogout = () => {
+    const confirmLogout = window.confirm("Apakah Anda yakin ingin keluar dari akun?");
+    if (confirmLogout) {
+      // Menghapus data sesi user yang sedang aktif
+      localStorage.removeItem("gopushkal_currentUser");
+      // Mengarahkan kembali ke halaman Login
+      router.push("/Login");
+    }
+  };
+
   // Kalkulasi total kalori keluar
   const grandTotalCalories = sessionTotals.reduce((acc, curr) => acc + curr, 0);
 
@@ -46,14 +60,62 @@ export default function AktivitasPage() {
   return (
     <section className="min-h-screen bg-black flex flex-col items-center pt-28 pb-10">
       {/* NAVBAR */}
-      <section className="bg-yellow-300 text-black w-full h-20 pe-7 fixed top-0 left-0 flex justify-between items-center z-50 shadow-lg">
+     <section className="bg-yellow-300 text-black w-full h-20 pe-7 fixed top-0 left-0 flex justify-between items-center z-50 shadow-lg">
         <div className="flex gap-2 px-6 items-center">
           <img src="Logo_Gopushkal-BL.png" className="w-15 h-15" alt="Logo" />
           <div className="text-3xl font-bold tracking-wider italic">GOPUSHKAL</div>
+
+          {/* --- BAGIAN MENU DROPDOWN (GARIS 3) --- */}
+          <div className="relative ml-4">
+            {/* Tombol Garis 3 */}
+            <button 
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="p-2 rounded-lg hover:bg-yellow-400 transition-colors focus:outline-none flex flex-col justify-center items-center gap-1.5"
+            >
+              <div className="w-6 h-1 bg-black rounded-full"></div>
+              <div className="w-6 h-1 bg-black rounded-full"></div>
+              <div className="w-6 h-1 bg-black rounded-full"></div>
+            </button>
+
+            {/* Kotak Dropdown */}
+            {isMenuOpen && (
+              <div className="absolute top-12 left-0 mt-2 w-48 bg-[#111111] border-2 border-yellow-400 rounded-xl shadow-2xl flex flex-col overflow-hidden z-50">
+                <Link 
+                  href="/Profile" 
+                  onClick={() => setIsMenuOpen(false)}
+                  className="px-5 py-3 text-white hover:bg-yellow-400 hover:text-black font-semibold transition-colors"
+                >
+                  Profile Anda
+                </Link>
+                <Link 
+                  href="/AboutUs" 
+                  onClick={() => setIsMenuOpen(false)}
+                  className="px-5 py-3 text-white hover:bg-yellow-400 hover:text-black font-semibold transition-colors"
+                >
+                  About Us
+                </Link>
+                
+                {/* Garis pemisah */}
+                <div className="border-t border-gray-700 my-1"></div>
+                
+                <button 
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    handleLogout();
+                  }}
+                  className="px-5 py-3 text-red-500 text-left hover:bg-red-500 hover:text-white font-bold transition-colors"
+                >
+                  Log Out
+                </button>
+              </div>
+            )}
+          </div>
+          {/* --- AKHIR BAGIAN MENU DROPDOWN --- */}
         </div>
+
         <div className="flex gap-6 justify-between items-center font-semibold">
           <Link href="/Dashboard" className="inline-block transition-transform duration-300 hover:-translate-y-1 hover:opacity-80">Dashboard</Link>
-          <Link href="/Kalkulator" className="inline-block transition-transform duration-300 hover:-translate-y-1 hover:opacity-80">KKM</Link>
+          <Link href="/Kalkulator" className="inline-block transition-transform duration-300 hover:-translate-y-1 hover:opacity-80 ">KKM</Link>
           <Link href="/Statistik" className="inline-block transition-transform duration-300 hover:-translate-y-1 hover:opacity-80">Statistik</Link>
           <Link href="/Aktivitas" className="inline-block transition-transform duration-300 hover:-translate-y-1 font-bold border-b-2 border-black">KKL</Link>
         </div>

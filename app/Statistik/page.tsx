@@ -7,11 +7,11 @@ export default function Statistik() {
           <img src="Logo_Gopushkal-BL.png" className="w-15 h-15" alt="Logo" />
           <div className="text-3xl font-bold tracking-wider italic">GOPUSHKAL</div>
         </div>
-        <div className="flex gap-6 justify-between items-center font-semibold">
-          <Link href="/Dashboard" className="inline-block transition-transform duration-300 hover:-translate-y-1 hover:opacity-80 ">Dashboard</Link>
-          <Link href="/Kalkulator" className="inline-block transition-transform duration-300 hover:-translate-y-1 hover:opacity-80 ">KKM</Link>
-          <Link href="/Statistik" className="inline-block transition-transform duration-300 hover:-translate-y-1 font-bold border-b-2 border-black">Statistik</Link>
-          <Link href="/Aktivitas" className="inline-block transition-transform duration-300 hover:-translate-y-1 hover:opacity-80">KKL</Link>
+         <div className="flex gap-6 justify-between items-center font-semibold">
+          <Link href="/Dashboard" className="inline-block hover:-translate-y-1 transition-transform">Dashboard</Link>
+          <Link href="/Kalkulator" className="inline-block hover:-translate-y-1 transition-transfor">KKM</Link>
+          <Link href="/Statistik" className="inline-block px-3 py-1 bg-gray-900 text-yellow-400 rounded-md">Statistik</Link>
+          <Link href="/Aktivitas" className="inline-block hover:-translate-y-1 transition-transfor">KKL</Link>
         </div>
       </section>
         <div className='font-bold text-4xl flex justify-center text-yellow-400'>Statistik</div>

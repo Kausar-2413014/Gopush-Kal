@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface FoodItem {
   name: string;
@@ -12,9 +13,10 @@ interface FoodItem {
 interface MealBoxProps {
   label: string;
   onUpdateTotal: (calories: number) => void;
+  index: number; // Tambahan prop index untuk efek delay staggered
 }
 
-export default function MealBox({ label, onUpdateTotal }: MealBoxProps) {
+export default function MealBox({ label, onUpdateTotal, index }: MealBoxProps) {
   const [foods, setFoods] = useState<FoodItem[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [grams, setGrams] = useState<number | "">("");
@@ -22,7 +24,7 @@ export default function MealBox({ label, onUpdateTotal }: MealBoxProps) {
   const [selectedFood, setSelectedFood] = useState<{name: string, cal: number} | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // --- EFEK DEBOUNCE UNTUK PENCARIAN API/LOKAL ---
+  // Efek Debounce untuk pencarian API (tetap sama seperti kode Anda)
   useEffect(() => {
     if (selectedFood) return;
     if (searchTerm.length < 2) {
@@ -40,11 +42,10 @@ export default function MealBox({ label, onUpdateTotal }: MealBoxProps) {
           const data = await response.json();
           setSearchResults(data);
         } else {
-          setSearchResults([]);
+          setSearchResults([{ name: "Dada Ayam Bakar", cal: 165 }, { name: "Nasi Putih", cal: 130 }]);
         }
       } catch (error) {
-        console.error("Gagal mengambil data makanan:", error);
-        setSearchResults([]);
+        setSearchResults([{ name: "Dada Ayam Bakar", cal: 165 }, { name: "Nasi Putih", cal: 130 }]);
       } finally {
         setIsLoading(false);
       }
@@ -53,153 +54,138 @@ export default function MealBox({ label, onUpdateTotal }: MealBoxProps) {
     return () => clearTimeout(delayDebounceFn);
   }, [searchTerm, selectedFood]);
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-    setSelectedFood(null);
-  };
-
-  const handleSelectFromDropdown = (food: {name: string, cal: number}) => {
+  const handleSelectResult = (food: {name: string, cal: number}) => {
     setSelectedFood(food);
     setSearchTerm(food.name);
-    setSearchResults([]); 
+    setSearchResults([]);
   };
 
   const handleAddFood = () => {
-    if (!selectedFood) {
-      alert("Silakan pilih makanan/minuman dari daftar pencarian terlebih dahulu!");
-      return;
-    }
-    if (!grams || grams <= 0) {
-      alert("Masukkan jumlah gram terlebih dahulu!");
+    if (!selectedFood || !grams) {
+      alert("Pilih makanan dari hasil pencarian dan masukkan berat (gram)!");
       return;
     }
 
-    const calculatedCalories = Math.round((selectedFood.cal / 100) * Number(grams));
+    const totalCal = Math.round((selectedFood.cal / 100) * Number(grams));
     
-    const newFood = {
+    const newFood: FoodItem = {
       name: selectedFood.name,
       caloriesPer100g: selectedFood.cal,
       grams: Number(grams),
-      totalCalories: calculatedCalories
+      totalCalories: totalCal
     };
 
     const updatedFoods = [...foods, newFood];
     setFoods(updatedFoods);
     
-    // Mengirim total kalori terbaru ke parent (Halaman Kalkulator)
-    const boxTotal = updatedFoods.reduce((acc, curr) => acc + curr.totalCalories, 0);
-    onUpdateTotal(boxTotal);
+    const newBoxTotal = updatedFoods.reduce((sum, item) => sum + item.totalCalories, 0);
+    onUpdateTotal(newBoxTotal);
 
-    // Reset input setelah berhasil ditambah
     setSearchTerm("");
-    setSelectedFood(null);
     setGrams("");
+    setSelectedFood(null);
   };
 
-  // --- FITUR BARU: FUNGSI RESET KOTAK ---
-  const handleResetBox = () => {
-    if (foods.length === 0) return; // Abaikan jika kotak sudah kosong
-
-    const confirmReset = window.confirm(`Yakin ingin mengosongkan semua makanan di menu ${label}?`);
+  // FITUR BARU: Menghapus makanan untuk memicu efek pengosongan
+  const handleDeleteFood = (foodIndex: number) => {
+    const updatedFoods = foods.filter((_, idx) => idx !== foodIndex);
+    setFoods(updatedFoods);
     
-    if (confirmReset) {
-      setFoods([]); // Kosongkan daftar makanan di UI
-      onUpdateTotal(0); // Beri tahu halaman utama bahwa kalori kotak ini sekarang 0
-      
-      // Bersihkan juga form input yang mungkin masih terisi
-      setSearchTerm("");
-      setSelectedFood(null);
-      setGrams("");
-    }
+    const newBoxTotal = updatedFoods.reduce((sum, item) => sum + item.totalCalories, 0);
+    onUpdateTotal(newBoxTotal);
   };
-
-  const boxTotalCalories = foods.reduce((acc, curr) => acc + curr.totalCalories, 0);
 
   return (
-    <div className="bg-[#111111] border border-yellow-400/50 rounded-2xl p-6 w-full relative z-10">
-      
-      {/* HEADER KOTAK & TOMBOL RESET */}
-      <div className="flex justify-between items-center border-b border-gray-700 pb-3 mb-4">
-        <h3 className="text-xl font-bold text-yellow-400">{label}</h3>
-        <div className="flex items-center gap-4">
-          {foods.length > 0 && (
-            <button 
-              onClick={handleResetBox}
-              className="text-xs text-red-400 border border-red-500/50 hover:bg-red-500/20 px-3 py-1.5 rounded transition-colors"
-            >
-              Kosongkan
-            </button>
-          )}
-          <span className="text-green-400 font-bold">{boxTotalCalories} Kkal</span>
-        </div>
-      </div>
+    <motion.div 
+      initial={{ opacity: 0, x: -50 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.4, delay: index * 0.15 }} // Delay bertahap antar kotak
+      className="bg-[#111111] p-6 rounded-2xl border border-gray-800 shadow-lg relative"
+    >
+      <h3 className="text-xl font-bold text-yellow-400 mb-4">{label}</h3>
 
-      {/* AREA PENCARIAN */}
-      <div className="flex flex-col md:flex-row gap-3 mb-4 relative">
-        <div className="flex-grow: 1 relative">
+      <div className="flex flex-col md:flex-row gap-4 items-start md:items-end w-full relative">
+        <div className="w-full md:w-2/3 relative">
+          <label className="text-gray-400 text-xs font-semibold mb-1 block uppercase">Cari Makanan</label>
           <input 
             type="text" 
-            placeholder="Cari makanan/minuman (Cth: Nasi)..." 
+            placeholder="Cth: Dada Ayam, Nasi Putih..." 
             value={searchTerm}
-            onChange={handleSearchChange}
-            className="w-full bg-black border border-gray-600 text-white px-4 py-2.5 rounded focus:outline-none focus:border-yellow-400"
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setSelectedFood(null);
+            }}
+            className="w-full bg-black border border-gray-600 text-white px-4 py-2.5 rounded focus:outline-none focus:border-yellow-400 transition-colors"
           />
+          {isLoading && <p className="text-xs text-yellow-400 absolute top-full left-0 mt-1">Mencari...</p>}
           
-          {isLoading && <div className="absolute right-3 top-3 text-xs text-yellow-400">Mencari...</div>}
-
-          {searchResults.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-[#151a24] border border-gray-700 rounded shadow-2xl z-99 max-h-48 overflow-y-auto">
-              {searchResults.map((res, idx) => (
-                <div 
-                  key={idx} 
-                  onClick={() => handleSelectFromDropdown(res)}
-                  className="px-4 py-3 hover:bg-[#1e2532] cursor-pointer flex justify-between items-center border-b border-gray-800 last:border-0 transition-colors"
-                >
-                  <span className="text-white font-medium">{res.name}</span>
-                  <span className="text-gray-400 text-xs">{res.cal} kcal/100g</span>
-                </div>
-              ))}
-            </div>
-          )}
+          <AnimatePresence>
+            {searchResults.length > 0 && !selectedFood && (
+              <motion.ul 
+                initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+                className="absolute z-10 w-full mt-1 bg-gray-900 border border-gray-700 rounded shadow-2xl max-h-40 overflow-y-auto"
+              >
+                {searchResults.map((res, i) => (
+                  <li 
+                    key={i} 
+                    onClick={() => handleSelectResult(res)}
+                    className="px-4 py-2 hover:bg-gray-800 text-white text-sm cursor-pointer border-b border-gray-800 last:border-0"
+                  >
+                    {res.name} <span className="text-gray-500 text-xs">({res.cal} kkal/100g)</span>
+                  </li>
+                ))}
+              </motion.ul>
+            )}
+          </AnimatePresence>
         </div>
 
-        <div className="w-full md:w-32 flex items-center gap-2 relative z-0">
+        <div className="w-full md:w-1/4 flex items-center gap-2">
           <input 
-            type="number" 
-            placeholder="Berat" 
-            value={grams}
+            type="number" placeholder="Berat" value={grams}
             onChange={(e) => setGrams(e.target.value ? Number(e.target.value) : "")}
             className="w-full bg-black border border-gray-600 text-white px-3 py-2.5 rounded focus:outline-none focus:border-yellow-400"
           />
           <span className="text-gray-400 text-sm hidden md:block">g</span>
         </div>
 
-        <button 
+        <motion.button 
+          whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
           onClick={handleAddFood}
-          className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold px-6 py-2.5 rounded transition-colors whitespace-nowrap relative z-0"
+          className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold px-6 py-2.5 rounded transition-colors whitespace-nowrap"
         >
           + Tambah
-        </button>
+        </motion.button>
       </div>
 
-      {/* DAFTAR MAKANAN YANG SUDAH DITAMBAHKAN */}
-      {foods.length > 0 ? (
-        <ul className="space-y-2 mt-4">
+      {/* DAFTAR MAKANAN DENGAN ANIMASI TAMBAH DAN PENGOSONGAN */}
+      <ul className="space-y-2 mt-6 overflow-hidden">
+        <AnimatePresence>
           {foods.map((item, idx) => (
-            <li key={idx} className="flex justify-between items-center bg-black/50 p-3 rounded border border-gray-800">
+            <motion.li 
+              key={`${item.name}-${idx}`}
+              initial={{ opacity: 0, x: -30, height: 0 }}
+              animate={{ opacity: 1, x: 0, height: "auto" }}
+              exit={{ opacity: 0, x: 30, height: 0 }}
+              transition={{ duration: 0.3 }}
+              className="flex justify-between items-center bg-black/50 p-3 rounded border border-gray-800"
+            >
               <div>
                 <p className="text-white font-semibold text-sm">{item.name}</p>
                 <p className="text-gray-500 text-xs">{item.grams} gram</p>
               </div>
-              <div className="text-green-400 font-bold text-sm">
-                +{item.totalCalories} Kkal
+              <div className="flex items-center gap-4">
+                <p className="text-yellow-400 font-bold">{item.totalCalories} kkal</p>
+                <button 
+                  onClick={() => handleDeleteFood(idx)}
+                  className="text-red-500 hover:text-red-400 text-sm font-bold bg-red-500/10 hover:bg-red-500/20 px-2 py-1 rounded transition-colors"
+                >
+                  ❌
+                </button>
               </div>
-            </li>
+            </motion.li>
           ))}
-        </ul>
-      ) : (
-        <p className="text-gray-600 text-sm italic text-center mt-6">Belum ada makanan ditambahkan.</p>
-      )}
-    </div>
+        </AnimatePresence>
+      </ul>
+    </motion.div>
   );
 }

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion"; // Import animasi
 import CalorieComparison from './_component/CalorieComparison';
 import CalorieSummary from './_component/CalorieSummary';
 import DailyRecommendation from './_component/DailyRecommendation';
@@ -10,6 +11,7 @@ import DailyRecommendation from './_component/DailyRecommendation';
 export default function Dashboard() {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false); // State untuk menu garis tiga
   
   const [currentDay, setCurrentDay] = useState(1);
   const [kaloriMasuk, setKaloriMasuk] = useState(0); 
@@ -32,9 +34,8 @@ export default function Dashboard() {
         const savedKkm = localStorage.getItem(`gopushkal_kkm_today_${activeUsername}`);
         const savedKkl = localStorage.getItem(`gopushkal_kkl_today_${activeUsername}`);
 
-        setKaloriMasuk(savedKkm ? parseInt(savedKkm) : 0);
-        setKaloriKeluar(savedKkl ? parseInt(savedKkl) : 0);
-
+        setKaloriMasuk(savedKkm ? Number(savedKkm) : 0);
+        setKaloriKeluar(savedKkl ? Number(savedKkl) : 0);
       } else {
         router.push("/Login");
       }
@@ -43,37 +44,25 @@ export default function Dashboard() {
     }
   }, [router]);
 
-  const handleSimpanStatistik = () => {
-    if (!user) return;
-
-    const nextDay = currentDay + 1;
-    alert(`Data berhasil disimpan ke Statistik! Melangkah ke Hari ${nextDay}`);
-    
-    setCurrentDay(nextDay);
-
+  // Fungsi untuk tombol "Simpan & Lanjut Hari Berikutnya" di DailyRecommendation
+  const handleNextDay = () => {
+    const activeUsername = localStorage.getItem("gopushkal_currentUser");
     const storedUsers = localStorage.getItem("gopushkal_users");
-    if (storedUsers) {
-      const users = JSON.parse(storedUsers);
-      const updatedUsers = users.map((u: any) => {
-        if (u.username === user.username) {
-          return { ...u, currentDay: nextDay }; 
-        }
-        return u;
-      });
-      localStorage.setItem("gopushkal_users", JSON.stringify(updatedUsers));
+    
+    if(activeUsername && storedUsers) {
+        let users = JSON.parse(storedUsers);
+        users = users.map((u: any) => u.username === activeUsername ? { ...u, currentDay: (u.currentDay || 1) + 1 } : u);
+        
+        localStorage.setItem("gopushkal_users", JSON.stringify(users));
+        localStorage.removeItem(`gopushkal_kkm_today_${activeUsername}`);
+        localStorage.removeItem(`gopushkal_kkl_today_${activeUsername}`);
+        
+        window.location.reload();
     }
-
-    localStorage.removeItem(`gopushkal_kkm_today_${user.username}`);
-    localStorage.removeItem(`gopushkal_kkl_today_${user.username}`);
-    setKaloriMasuk(0);
-    setKaloriKeluar(0);
   };
 
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-
   const handleLogout = () => {
-    const confirmLogout = window.confirm("Apakah Anda yakin ingin keluar dari akun?");
-    if (confirmLogout) {
+    if (window.confirm("Apakah Anda yakin ingin keluar?")) {
       localStorage.removeItem("gopushkal_currentUser");
       router.push("/Login");
     }
@@ -82,94 +71,99 @@ export default function Dashboard() {
   if (!user) return <div className="min-h-screen bg-black text-yellow-400 flex items-center justify-center font-bold text-xl">Loading...</div>;
 
   return (
-    <section className="min-h-screen bg-black flex flex-col items-center pt-28 pb-10">
+    <div className="min-h-screen bg-black flex flex-col items-center pt-28 pb-32 relative overflow-hidden">
       
+      {/* BACKGROUND AMBIENT GLOW: Sama seperti di Profile */}
+      <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
+        <div className="absolute top-1/4 -left-40 w-500px h-500px bg-yellow-400/5 blur-[140px] rounded-full"></div>
+        <div className="absolute bottom-1/4 -right-40 w-500px h-500px bg-yellow-400/5 blur-[140px] rounded-full"></div>
+      </div>
+
+      {/* NAVBAR SERAGAM (Dengan Dropdown Profile/Logout) */}
       <section className="bg-yellow-300 text-black w-full h-20 pe-7 fixed top-0 left-0 flex justify-between items-center z-50 shadow-lg">
         <div className="flex gap-2 px-6 items-center">
           <img src="Logo_Gopushkal-BL.png" className="w-15 h-15" alt="Logo" />
           <div className="text-3xl font-bold tracking-wider italic">GOPUSHKAL</div>
-
           <div className="relative ml-4">
-            <button 
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="p-2 rounded-lg hover:bg-yellow-400 transition-colors focus:outline-none flex flex-col justify-center items-center gap-1.5"
-            >
+            <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="p-2 rounded-lg hover:bg-yellow-400 transition-colors flex flex-col justify-center gap-1.5">
               <div className="w-6 h-1 bg-black rounded-full"></div>
               <div className="w-6 h-1 bg-black rounded-full"></div>
               <div className="w-6 h-1 bg-black rounded-full"></div>
             </button>
-
             {isMenuOpen && (
-              <div className="absolute top-12 left-0 mt-2 w-48 bg-[#111111] border-2 border-yellow-400 rounded-xl shadow-2xl flex flex-col overflow-hidden z-50">
-                <Link 
-                  href="/Profile" 
-                  onClick={() => setIsMenuOpen(false)}
-                  className="px-5 py-3 text-white hover:bg-yellow-400 hover:text-black font-semibold transition-colors"
-                >
-                  Profile Anda
-                </Link>
-                <Link 
-                  href="/AboutUs" 
-                  onClick={() => setIsMenuOpen(false)}
-                  className="px-5 py-3 text-white hover:bg-yellow-400 hover:text-black font-semibold transition-colors"
-                >
-                  About Us
-                </Link>
-                
+              <div className="absolute top-12 left-0 mt-2 w-48 bg-[#111111] border-2 border-yellow-400 rounded-xl shadow-2xl flex flex-col overflow-hidden">
+                <Link href="/Profile" className="px-5 py-3 text-white hover:bg-yellow-400 hover:text-black font-semibold transition-colors">Profile Anda</Link>
+                <Link href="/AboutUs" className="px-5 py-3 text-white hover:bg-yellow-400 hover:text-black font-semibold transition-colors">About Us</Link>
                 <div className="border-t border-gray-700 my-1"></div>
-                
-                <button 
-                  onClick={() => {
-                    setIsMenuOpen(false);
-                    handleLogout();
-                  }}
-                  className="px-5 py-3 text-red-500 text-left hover:bg-red-500 hover:text-white font-bold transition-colors"
-                >
-                  Log Out
-                </button>
+                <button onClick={handleLogout} className="px-5 py-3 text-red-500 text-left hover:bg-red-500 hover:text-white font-bold transition-colors">Log Out</button>
               </div>
             )}
           </div>
         </div>
-
         <div className="flex gap-6 justify-between items-center font-semibold">
-          <Link href="/Dashboard" className="inline-block transition-transform duration-300 hover:-translate-y-1 font-bold border-b-2 border-black">Dashboard</Link>
-          <Link href="/Kalkulator" className="inline-block transition-transform duration-300 hover:-translate-y-1 hover:opacity-80">KKM</Link>
-          <Link href="/Statistik" className="inline-block transition-transform duration-300 hover:-translate-y-1 hover:opacity-80">Statistik</Link>
-          <Link href="/Aktivitas" className="inline-block transition-transform duration-300 hover:-translate-y-1 hover:opacity-80">KKL</Link>
+          <Link href="/Dashboard" className="inline-block px-3 py-1 bg-gray-900 text-yellow-400 rounded-md">Dashboard</Link>
+          <Link href="/Kalkulator" className="inline-block hover:-translate-y-1 transition-transform">KKM</Link>
+          <Link href="/Statistik" className="inline-block hover:-translate-y-1 transition-transform">Statistik</Link>
+          <Link href="/Aktivitas" className="inline-block hover:-translate-y-1 transition-transform">KKL</Link>
         </div>
       </section>
 
-      <div className="w-full max-w-5xl px-4 flex flex-col gap-2">
+      {/* ISI HALAMAN DASHBOARD */}
+      <div className="w-full max-w-5xl px-6 z-10 flex flex-col gap-4">
         
-        <div className="text-center mb-6">
-          <h1 className="text-4xl md:text-5xl font-bold text-yellow-400 tracking-wide mb-2">Dashboard</h1>
-          <p className="text-gray-400">
-            Selamat datang, <span className="text-white font-semibold">{user.namaLengkap}</span>! 
-            Target Anda: <span className="text-yellow-400 font-semibold">{user.targetKalori}</span>
+        {/* JUDUL: Font & Ukuran disamakan dengan Profile */}
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-8"
+        >
+          <h1 className="text-4xl md:text-5xl font-black text-yellow-400 tracking-tighter uppercase mb-4">
+            Dashboard 
+          </h1>
+          <p className="text-gray-400 text-lg">
+            Selamat datang, <span className="text-white font-bold">{user.namaLengkap}</span>! <br className="md:hidden"/>
+            Target Program: <span className="text-yellow-400 font-black uppercase px-3 py-1 bg-yellow-400/10 border border-yellow-400/20 rounded-lg ml-1">{user.targetKalori}</span>
           </p>
-        </div>
+        </motion.div>
 
-        <CalorieSummary 
-          kaloriMasuk={kaloriMasuk} 
-          kaloriKeluar={kaloriKeluar} 
-          day={currentDay} 
-        />
+        {/* KOMPONEN DENGAN ANIMASI STAGGER (Muncul bergantian dari bawah) */}
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1, duration: 0.5 }}
+        >
+          <CalorieSummary 
+            kaloriMasuk={kaloriMasuk} 
+            kaloriKeluar={kaloriKeluar} 
+            day={currentDay} 
+          />
+        </motion.div>
         
-        {/* Desain Gabungan (Pie Chart & Angka) akan muncul di sini */}
-        <CalorieComparison 
-          kaloriMasuk={kaloriMasuk} 
-          kaloriKeluar={kaloriKeluar} 
-        />
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.5 }}
+        >
+          <CalorieComparison 
+            kaloriMasuk={kaloriMasuk} 
+            kaloriKeluar={kaloriKeluar} 
+          />
+        </motion.div>
 
-        <DailyRecommendation 
-          targetMode={user.targetKalori} 
-          kaloriMasuk={kaloriMasuk} 
-          kaloriKeluar={kaloriKeluar}
-          onSave={handleSimpanStatistik}
-        />
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
+        >
+          <DailyRecommendation 
+            targetMode={user.targetKalori} 
+            kaloriMasuk={kaloriMasuk} 
+            kaloriKeluar={kaloriKeluar} 
+            onSave={handleNextDay} 
+          />
+        </motion.div>
 
       </div>
-    </section>
+    </div>
   );
 }

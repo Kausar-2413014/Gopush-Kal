@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
-// Simulasi Database Olahraga
 const activityDB = [
   { name: "Lari / Jogging", calPerMin: 10, calPerKm: 65 },
   { name: "Bersepeda", calPerMin: 8, calPerKm: 30 },
@@ -25,176 +25,133 @@ interface ActivityItem {
 interface ActivityBoxProps {
   label: string;
   onUpdateTotal: (calories: number) => void;
+  index: number; // Tambahan prop index untuk efek staggered loading
 }
 
-export default function ActivityBox({ label, onUpdateTotal }: ActivityBoxProps) {
+export default function ActivityBox({ label, onUpdateTotal, index }: ActivityBoxProps) {
   const [activities, setActivities] = useState<ActivityItem[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedActivity, setSelectedActivity] = useState("");
   const [duration, setDuration] = useState<number | "">("");
   const [distance, setDistance] = useState<number | "">("");
-  
-  const [searchResults, setSearchResults] = useState<typeof activityDB>([]);
-  const [selectedActivity, setSelectedActivity] = useState<typeof activityDB[0] | null>(null);
-
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const query = e.target.value;
-    setSearchTerm(query);
-    setSelectedActivity(null);
-
-    if (query.length > 0) {
-      const results = activityDB.filter(act => act.name.toLowerCase().includes(query.toLowerCase()));
-      setSearchResults(results);
-    } else {
-      setSearchResults([]);
-    }
-  };
-
-  const handleSelectFromDropdown = (act: typeof activityDB[0]) => {
-    setSelectedActivity(act);
-    setSearchTerm(act.name);
-    setSearchResults([]); 
-  };
 
   const handleAddActivity = () => {
     if (!selectedActivity) {
-      alert("Pilih jenis olahraga dari daftar pencarian terlebih dahulu!");
+      alert("Silakan pilih jenis olahraga terlebih dahulu!");
       return;
     }
     if (!duration && !distance) {
-      alert("Masukkan Durasi (Menit) atau Jarak (KM) terlebih dahulu!");
+      alert("Silakan isi Durasi (Menit) atau Jarak (KM)!");
       return;
     }
 
-    let calculatedCalories = 0;
-    
-    // Logika Perhitungan (Prioritaskan Durasi jika keduanya diisi)
-    if (duration) {
-      calculatedCalories = Math.round(selectedActivity.calPerMin * Number(duration));
-    } else if (distance) {
-      calculatedCalories = Math.round(selectedActivity.calPerKm * Number(distance));
+    const matched = activityDB.find(a => a.name === selectedActivity);
+    if (!matched) return;
+
+    let calFromMin = 0;
+    let calFromKm = 0;
+
+    if (duration && matched.calPerMin > 0) {
+      calFromMin = Number(duration) * matched.calPerMin;
+    }
+    if (distance && matched.calPerKm > 0) {
+      calFromKm = Number(distance) * matched.calPerKm;
     }
 
-    if (calculatedCalories === 0 && distance && selectedActivity.calPerKm === 0) {
-        alert("Olahraga ini tidak bisa dihitung dengan jarak. Silakan masukkan Durasi (Menit).");
-        return;
-    }
+    const totalCal = calFromMin + calFromKm;
 
-    const newActivity: ActivityItem = {
-      name: selectedActivity.name,
+    const newItem: ActivityItem = {
+      name: selectedActivity,
       duration: duration ? Number(duration) : null,
       distance: distance ? Number(distance) : null,
-      totalCalories: calculatedCalories
+      totalCalories: totalCal
     };
 
-    const updatedActivities = [...activities, newActivity];
-    setActivities(updatedActivities);
-    
-    const boxTotal = updatedActivities.reduce((acc, curr) => acc + curr.totalCalories, 0);
-    onUpdateTotal(boxTotal);
+    const updated = [...activities, newItem];
+    setActivities(updated);
 
-    setSearchTerm("");
-    setSelectedActivity(null);
+    const newBoxTotal = updated.reduce((sum, item) => sum + item.totalCalories, 0);
+    onUpdateTotal(newBoxTotal);
+
+    // Reset Form Input
+    setSelectedActivity("");
     setDuration("");
     setDistance("");
   };
 
-  const handleResetBox = () => {
-    if (activities.length === 0) return;
-    const confirmReset = window.confirm(`Yakin ingin mengosongkan semua data di ${label}?`);
-    if (confirmReset) {
-      setActivities([]);
-      onUpdateTotal(0);
-      setSearchTerm("");
-      setSelectedActivity(null);
-      setDuration("");
-      setDistance("");
-    }
+  // Fitur Baru: Menghapus item aktivitas untuk memicu animasi pengosongan
+  const handleDeleteActivity = (itemIdx: number) => {
+    const updated = activities.filter((_, idx) => idx !== itemIdx);
+    setActivities(updated);
+
+    const newBoxTotal = updated.reduce((sum, item) => sum + item.totalCalories, 0);
+    onUpdateTotal(newBoxTotal);
   };
 
-  const boxTotalCalories = activities.reduce((acc, curr) => acc + curr.totalCalories, 0);
-
   return (
-    <div className="bg-[#111111] border border-yellow-400/50 rounded-2xl p-6 w-full relative z-10">
-      
-      {/* HEADER & TOMBOL KOSONGKAN */}
-      <div className="flex justify-between items-center border-b border-gray-700 pb-3 mb-4">
-        <h3 className="text-xl font-bold text-yellow-400">{label}</h3>
-        <div className="flex items-center gap-4">
-          {activities.length > 0 && (
-            <button 
-              onClick={handleResetBox}
-              className="text-xs text-red-400 border border-red-500/50 hover:bg-red-500/20 px-3 py-1.5 rounded transition-colors"
-            >
-              Kosongkan
-            </button>
-          )}
-          <span className="text-red-500 font-bold">{boxTotalCalories} Kkal</span>
-        </div>
-      </div>
+    <motion.div 
+      initial={{ opacity: 0, x: -50 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.4, delay: index * 0.15 }} // Efek meluncur bergantian
+      className="bg-[#111111] p-6 rounded-2xl border border-gray-800 shadow-lg"
+    >
+      <h3 className="text-xl font-bold text-yellow-400 mb-4">{label}</h3>
 
-      {/* AREA PENCARIAN & INPUT (MIRIP KKM) */}
-      <div className="flex flex-col md:flex-row gap-3 mb-4 relative">
-        <div className="flex-grow: 1 relative">
-          <input 
-            type="text" 
-            placeholder="Cari olahraga (Cth: Lari)..." 
-            value={searchTerm}
-            onChange={handleSearchChange}
-            className="w-full bg-black border border-gray-600 text-white px-4 py-2.5 rounded focus:outline-none focus:border-yellow-400"
-          />
-          
-          {searchResults.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-[#151a24] border border-gray-700 rounded shadow-2xl z-99 max-h-48 overflow-y-auto">
-              {searchResults.map((res, idx) => (
-                <div 
-                  key={idx} 
-                  onClick={() => handleSelectFromDropdown(res)}
-                  className="px-4 py-3 hover:bg-[#1e2532] cursor-pointer flex justify-between items-center border-b border-gray-800 last:border-0 transition-colors"
-                >
-                  <span className="text-white font-medium">{res.name}</span>
-                </div>
-              ))}
-            </div>
-          )}
+      <div className="flex flex-col md:flex-row gap-4 items-start md:items-end w-full">
+        <div className="w-full md:w-2/5">
+          <label className="text-gray-400 text-xs font-semibold mb-1 block uppercase">Pilih Olahraga</label>
+          <select 
+            value={selectedActivity}
+            onChange={(e) => setSelectedActivity(e.target.value)}
+            className="w-full bg-black border border-gray-600 text-white px-4 py-2.5 rounded focus:outline-none focus:border-yellow-400 transition-colors cursor-pointer"
+          >
+            <option value="" disabled>-- Pilih Aktivitas --</option>
+            {activityDB.map((act, i) => (
+              <option key={i} value={act.name} className="text-white bg-black">
+                {act.name}
+              </option>
+            ))}
+          </select>
         </div>
 
-        <div className="w-full md:w-24 flex items-center gap-2 relative z-0">
+        <div className="w-full md:w-1/4 flex items-center gap-2">
           <input 
-            type="number" 
-            placeholder="Waktu" 
-            value={duration}
+            type="number" placeholder="Durasi" value={duration}
             onChange={(e) => setDuration(e.target.value ? Number(e.target.value) : "")}
             className="w-full bg-black border border-gray-600 text-white px-3 py-2.5 rounded focus:outline-none focus:border-yellow-400"
           />
-          <span className="text-gray-400 text-sm hidden md:block">Mnt</span>
+          <span className="text-gray-400 text-sm hidden md:block">Menit</span>
         </div>
-        
-        <span className="text-gray-600 flex items-center justify-center font-bold md:flex">/</span>
 
-        <div className="w-full md:w-24 flex items-center gap-2 relative z-0">
+        <div className="w-full md:w-1/4 flex items-center gap-2">
           <input 
-            type="number" 
-            placeholder="Jarak" 
-            value={distance}
+            type="number" placeholder="Jarak" value={distance}
             onChange={(e) => setDistance(e.target.value ? Number(e.target.value) : "")}
             className="w-full bg-black border border-gray-600 text-white px-3 py-2.5 rounded focus:outline-none focus:border-yellow-400"
           />
           <span className="text-gray-400 text-sm hidden md:block">KM</span>
         </div>
 
-        <button 
+        <motion.button 
+          whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
           onClick={handleAddActivity}
-          className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold px-6 py-2.5 rounded transition-colors whitespace-nowrap relative z-0"
+          className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold px-6 py-2.5 rounded transition-colors whitespace-nowrap"
         >
           + Tambah
-        </button>
+        </motion.button>
       </div>
 
-      {/* DAFTAR OLAHRAGA YANG DITAMBAHKAN */}
-      {activities.length > 0 ? (
-        <ul className="space-y-2 mt-4">
+      {/* DAFTAR OLAHRAGA DENGAN ANIMASI TAMBAH DAN PENGOSONGAN */}
+      <ul className="space-y-2 mt-6 overflow-hidden">
+        <AnimatePresence>
           {activities.map((item, idx) => (
-            <li key={idx} className="flex justify-between items-center bg-black/50 p-3 rounded border border-gray-800">
+            <motion.li 
+              key={`${item.name}-${idx}`}
+              initial={{ opacity: 0, x: -30, height: 0 }}
+              animate={{ opacity: 1, x: 0, height: "auto" }}
+              exit={{ opacity: 0, x: 30, height: 0 }}
+              transition={{ duration: 0.3 }}
+              className="flex justify-between items-center bg-black/50 p-3 rounded border border-gray-800"
+            >
               <div>
                 <p className="text-white font-semibold text-sm">{item.name}</p>
                 <p className="text-gray-500 text-xs">
@@ -203,15 +160,19 @@ export default function ActivityBox({ label, onUpdateTotal }: ActivityBoxProps) 
                   {item.distance ? `${item.distance} KM` : ""}
                 </p>
               </div>
-              <div className="text-red-500 font-bold text-sm">
-                +{item.totalCalories} Kkal
+              <div className="flex items-center gap-4">
+                <p className="text-red-500 font-bold">{item.totalCalories} kkal</p>
+                <button 
+                  onClick={() => handleDeleteActivity(idx)}
+                  className="text-red-500 hover:text-red-400 text-sm font-bold bg-red-500/10 hover:bg-red-500/20 px-2 py-1 rounded transition-colors"
+                >
+                  ❌
+                </button>
               </div>
-            </li>
+            </motion.li>
           ))}
-        </ul>
-      ) : (
-        <p className="text-gray-600 text-sm italic text-center mt-6">Belum ada aktivitas ditambahkan.</p>
-      )}
-    </div>
+        </AnimatePresence>
+      </ul>
+    </motion.div>
   );
 }

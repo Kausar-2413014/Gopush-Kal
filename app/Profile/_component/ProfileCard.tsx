@@ -32,10 +32,10 @@ export default function ProfileCard({ formData, setFormData, targetKalori }: Pro
           <label className="text-xs text-gray-500 uppercase tracking-widest flex items-center gap-2">
             <IconUserCircle size={16} className="text-yellow-400" /> Nama Lengkap
           </label>
-          <input 
+          <input
             type="text"
             name="namaLengkap"
-            value={formData.namaLengkap}
+            value={formData.namaLengkap || ""}
             onChange={handleInputChange}
             className="w-full bg-black border border-gray-800 text-white px-4 py-3 rounded-xl focus:outline-none focus:border-yellow-400 transition-colors font-semibold"
           />
@@ -46,43 +46,46 @@ export default function ProfileCard({ formData, setFormData, targetKalori }: Pro
           <label className="text-xs text-gray-500 uppercase tracking-widest flex items-center gap-2">
             <IconId size={16} className="text-yellow-400" /> Username
           </label>
-          <input 
+          <input
             type="text"
             name="username"
-            value={formData.username}
+            value={formData.username || ""}
             onChange={handleInputChange}
             className="w-full bg-black border border-gray-800 text-white px-4 py-3 rounded-xl focus:outline-none focus:border-yellow-400 transition-colors font-semibold"
           />
         </div>
 
         {/* INPUT PASSWORD */}
-        <div className="flex flex-col gap-1.5 relative">
+        <div className="flex flex-col gap-1.5">
           <label className="text-xs text-gray-500 uppercase tracking-widest flex items-center gap-2">
-            <IconTarget size={16} className="text-yellow-400" /> Password
+            <IconEye size={16} className="text-yellow-400" /> Password
           </label>
-          <div className="relative w-full">
-            <input 
+          <div className="relative">
+            <input
               type={showPassword ? "text" : "password"}
               name="password"
-              value={formData.password}
+              value={formData.password || ""}
               onChange={handleInputChange}
-              className="w-full bg-black border border-gray-800 text-white px-4 py-3 rounded-xl focus:outline-none focus:border-yellow-400 transition-colors font-semibold pr-12"
+              className="w-full bg-black border border-gray-800 text-white px-4 py-3 rounded-xl focus:outline-none focus:border-yellow-400 transition-colors font-semibold"
             />
-            <button 
+            <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-yellow-400 transition-colors"
             >
-              {showPassword ? <IconEyeOff size={22} /> : <IconEye size={22} />}
+              {showPassword ? <IconEyeOff size={20} /> : <IconEye size={20} />}
             </button>
           </div>
         </div>
 
-        {/* INPUT BERAT BADAN (SEKARANG & TARGET) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* ========================================================= */}
+        {/* BERAT SEKARANG & TARGET (DIBUAT SEJAJAR DENGAN GRID) */}
+        {/* ========================================================= */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          
           <div className="flex flex-col gap-1.5">
             <label className="text-xs text-gray-500 uppercase tracking-widest flex items-center gap-2">
-              <IconWeight size={16} className="text-green-400" /> Berat Sekarang (KG)
+              <IconWeight size={16} className="text-yellow-400" /> Berat Sekarang (KG)
             </label>
             <input 
               type="number"
@@ -95,7 +98,7 @@ export default function ProfileCard({ formData, setFormData, targetKalori }: Pro
 
           <div className="flex flex-col gap-1.5">
             <label className="text-xs text-gray-500 uppercase tracking-widest flex items-center gap-2">
-              <IconWeight size={16} className="text-red-500" /> Berat Target (KG) <span className="text-[10px] text-red-400/80 lowercase">(reset progress)</span>
+              <IconWeight size={16} className="text-red-500" /> Berat Target (KG)
             </label>
             <input 
               type="number"
@@ -104,19 +107,20 @@ export default function ProfileCard({ formData, setFormData, targetKalori }: Pro
               onChange={handleInputChange}
               className="w-full bg-black border border-gray-800 text-white px-4 py-3 rounded-xl focus:outline-none focus:border-yellow-400 transition-colors font-semibold"
             />
+            <span className="text-[10px] text-red-400/80 lowercase mt-0.5">(reset progress)</span>
           </div>
+
         </div>
-        
-        {/* Informasi Target Aktif */}
-        <div className="p-4 bg-yellow-400/5 border border-yellow-400/20 rounded-2xl flex justify-between items-center mt-2">
-          <div className="flex items-center gap-3 text-gray-400 text-sm">
-            <IconTarget className="text-yellow-400" size={20} />
-            <span>Metode Kebutuhan Kalori Aktif:</span>
-          </div>
-          <span className="bg-yellow-400 text-black px-4 py-1 rounded-lg font-black text-xs uppercase">
-            {targetKalori || "N/A"}
-          </span>
+
+      </div>
+      
+      {/* Informasi Target Aktif */}
+      <div className="p-4 bg-yellow-400/5 border border-yellow-400/20 rounded-2xl flex justify-between items-center mt-8">
+        <div className="flex items-center gap-3 text-gray-400 text-sm">
+          <IconTarget className="text-yellow-400" size={20} />
+          <span>Metode Kebutuhan Kalori Aktif:</span>
         </div>
+        <span className="text-yellow-400 font-bold uppercase tracking-wider">{targetKalori}</span>
       </div>
     </div>
   );

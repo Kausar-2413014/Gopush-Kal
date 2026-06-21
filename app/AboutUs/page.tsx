@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { motion, Variants } from "framer-motion";
+import { motion, Variants, AnimatePresence } from "framer-motion";
 import { 
   IconBarbell, 
   IconRun, 
@@ -111,14 +111,19 @@ export default function AboutUsPage() {
               <div className="w-6 h-1 bg-black rounded-full"></div>
             </button>
 
-            {isMenuOpen && (
-              <div className="absolute top-12 left-0 mt-2 w-48 bg-[#111111] border-2 border-yellow-400 rounded-xl shadow-2xl flex flex-col overflow-hidden">
-                <Link href="/Profile" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-white hover:bg-yellow-400 hover:text-black font-semibold transition-colors">Profile Anda</Link>
-                <Link href="/AboutUs" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-white hover:bg-yellow-400 hover:text-black font-semibold transition-colors">About Us</Link>
-                <div className="border-t border-gray-700 my-1"></div>
-                <button onClick={() => { setIsMenuOpen(false); handleLogout(); }} className="px-5 py-3 text-red-500 text-left hover:bg-red-500 hover:text-white font-bold transition-colors">Log Out</button>
-              </div>
-            )}
+           <AnimatePresence>
+              {isMenuOpen && (
+                <motion.div 
+                  initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+                  className="absolute top-12 left-0 mt-2 w-48 bg-[#111111] border-2 border-yellow-400 rounded-xl shadow-2xl flex flex-col overflow-hidden z-50"
+                >
+                  <Link href="/Profile" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-white hover:bg-yellow-400 hover:text-black font-semibold transition-colors">Profile Anda</Link>
+                  <Link href="/AboutUs" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-white hover:bg-yellow-400 hover:text-black font-semibold transition-colors">About Us</Link>
+                  <div className="border-t border-gray-700 my-1"></div>
+                  <button onClick={() => { setIsMenuOpen(false); handleLogout(); }} className="px-5 py-3 text-red-500 text-left hover:bg-red-500 hover:text-white font-bold transition-colors">Log Out</button>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
 

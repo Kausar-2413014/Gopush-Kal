@@ -3,9 +3,20 @@
 import Link from 'next/link';
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence, useMotionValue, useTransform, animate } from "framer-motion";
+import { motion, AnimatePresence, useMotionValue, useTransform, animate, Variants } from "framer-motion";
 import ActivitySelector from "./_component/ActivitySelector";
 import ActivityBox from "./_component/ActivityBox";
+// Import Tabler Icons bertema Olahraga/Aktivitas
+import { 
+  IconBarbell, 
+  IconRun, 
+  IconBike, 
+  IconHeartbeat, 
+  IconJumpRope, 
+  IconSwimming, 
+  IconStretching, 
+  IconTreadmill 
+} from "@tabler/icons-react";
 
 // Komponen Counter Angka Animasi
 function AnimatedCounter({ value }: { value: number }) {
@@ -22,13 +33,16 @@ function AnimatedCounter({ value }: { value: number }) {
 
 export default function AktivitasPage() {
   const router = useRouter();
-  
-  // State Navbar Dropdown
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   // State Aktivitas
   const [sessionCount, setSessionCount] = useState<number | null>(null);
   const [sessionTotals, setSessionTotals] = useState<number[]>([]);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const handleLogout = () => {
     const confirmLogout = window.confirm("Apakah Anda yakin ingin keluar dari akun?");
@@ -72,9 +86,65 @@ export default function AktivitasPage() {
     }
   };
 
+  // Proteksi Hydration
+  if (!isMounted) return <main className="min-h-screen bg-black" />;
+
+  // Variasi Animasi In and Out Sesuai Spek KKM
+  const cardVariants: Variants = {
+    hidden: { opacity: 0, y: 50 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { type: "spring", stiffness: 100 }
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-black text-white font-sans overflow-x-hidden pt-28 pb-10">
+    <main suppressHydrationWarning className="min-h-screen bg-black text-white font-sans overflow-x-clap pt-28 pb-10 relative">
       
+      {/* ========================================== */}
+      {/* BACKGROUND FLOATING ICONS (SPORTS THEME) */}
+      {/* ========================================== */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        {/* Sisi Kiri */}
+        <motion.div 
+          className="absolute top-[25%] left-[5%] text-red-500/10 hidden xl:block"
+          animate={{ y: [0, -20, 0], rotate: [0, 10, -10, 0] }}
+          transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+        ><IconBarbell size={70} /></motion.div>
+        
+        <motion.div 
+          className="absolute top-[55%] left-[8%] text-white/10 hidden xl:block"
+          animate={{ y: [0, 30, 0], rotate: [0, -15, 15, 0] }}
+          transition={{ duration: 9, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+        ><IconRun size={80} /></motion.div>
+
+        <motion.div 
+          className="absolute bottom-[20%] left-[4%] text-orange-500/10 hidden xl:block"
+          animate={{ y: [0, -15, 0], x: [0, 10, 0] }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+        ><IconJumpRope size={60} /></motion.div>
+
+        {/* Sisi Kanan */}
+        <motion.div 
+          className="absolute top-[30%] right-[6%] text-white/10 hidden xl:block"
+          animate={{ y: [0, 35, 0], rotate: [0, 20, 0] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 0.3 }}
+        ><IconHeartbeat size={75} /></motion.div>
+
+        <motion.div 
+          className="absolute top-[60%] right-[5%] text-red-500/10 hidden xl:block"
+          animate={{ y: [0, -40, 0], scale: [1, 1.1, 1] }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
+        ><IconBike size={90} /></motion.div>
+
+        <motion.div 
+          className="absolute bottom-[15%] right-[7%] text-white/10 hidden xl:block"
+          animate={{ y: [0, 25, 0], x: [0, -15, 0] }}
+          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+        ><IconSwimming size={65} /></motion.div>
+      </div>
+
       {/* ========================================== */}
       {/* NAVBAR ASLI (KUNING) - TIDAK DIUBAH SAMA SEKALI */}
       {/* ========================================== */}
@@ -93,26 +163,25 @@ export default function AktivitasPage() {
               <div className="w-6 h-1 bg-black rounded-full"></div>
             </button>
 
-            {isMenuOpen && (
-              <div className="absolute top-12 left-0 mt-2 w-48 bg-[#111111] border-2 border-yellow-400 rounded-xl shadow-2xl flex flex-col overflow-hidden z-50">
-                <Link href="/Profile" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-white hover:bg-yellow-400 hover:text-black font-semibold transition-colors">
-                  Profile Anda
-                </Link>
-                <Link href="/AboutUs" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-white hover:bg-yellow-400 hover:text-black font-semibold transition-colors">
-                  About Us
-                </Link>
-                <div className="border-t border-gray-700 my-1"></div>
-                <button onClick={() => { setIsMenuOpen(false); handleLogout(); }} className="px-5 py-3 text-red-500 text-left hover:bg-red-500 hover:text-white font-bold transition-colors">
-                  Log Out
-                </button>
-              </div>
-            )}
+            <AnimatePresence>
+              {isMenuOpen && (
+                <motion.div 
+                  initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+                  className="absolute top-12 left-0 mt-2 w-48 bg-[#111111] border-2 border-yellow-400 rounded-xl shadow-2xl flex flex-col overflow-hidden z-50"
+                >
+                  <Link href="/Profile" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-white hover:bg-yellow-400 hover:text-black font-semibold transition-colors">Profile Anda</Link>
+                  <Link href="/AboutUs" onClick={() => setIsMenuOpen(false)} className="px-5 py-3 text-white hover:bg-yellow-400 hover:text-black font-semibold transition-colors">About Us</Link>
+                  <div className="border-t border-gray-700 my-1"></div>
+                  <button onClick={() => { setIsMenuOpen(false); handleLogout(); }} className="px-5 py-3 text-red-500 text-left hover:bg-red-500 hover:text-white font-bold transition-colors">Log Out</button>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
 
-         <div className="flex gap-6 justify-between items-center font-semibold">
+        <div className="flex gap-6 justify-between items-center font-semibold">
           <Link href="/Dashboard" className="inline-block hover:-translate-y-1 transition-transform">Dashboard</Link>
-          <Link href="/Kalkulator" className="inline-block hover:-translate-y-1 transition-transfor">KKM</Link>
+          <Link href="/Kalkulator" className="inline-block hover:-translate-y-1 transition-transform">KKM</Link>
           <Link href="/Statistik" className="inline-block hover:-translate-y-1 transition-transform">Statistik</Link>
           <Link href="/Aktivitas" className="inline-block px-3 py-1 bg-gray-900 text-yellow-400 rounded-md">KKL</Link>
         </div>
@@ -121,23 +190,40 @@ export default function AktivitasPage() {
       {/* ========================================== */}
       {/* KONTEN KALKULATOR OLAHRAGA DENGAN ANIMASI */}
       {/* ========================================== */}
-      <div className="w-full max-w-4xl mx-auto px-4 flex flex-col gap-6">
+      <div className="w-full max-w-4xl mx-auto px-4 flex flex-col gap-6 z-10 relative">
         
-        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="text-center mb-6">
+        {/* JUDUL DENGAN ANIMASI IN & OUT */}
+        <motion.div 
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: false, amount: 0.3 }}
+          variants={cardVariants}
+          className="text-center mb-6"
+        >
           <h1 className="text-4xl md:text-5xl font-black text-white tracking-wide mb-2 uppercase">Input Kalori <span className="text-red-500">Keluar</span></h1>
           <p className="text-gray-400">Catat semua aktivitas fisik dan olahraga yang Anda lakukan hari ini.</p>
         </motion.div>
 
+        {/* AnimatePresence untuk pertukaran halaman */}
         <AnimatePresence mode="wait">
           {sessionCount === null ? (
-            <motion.div key="selector" exit={{ opacity: 0, scale: 0.9, y: 20 }} transition={{ duration: 0.3 }}>
+            <motion.div 
+              key="selector" 
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: false }}
+              variants={cardVariants}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            >
               <ActivitySelector onSelect={handleSelectSessions} />
             </motion.div>
           ) : (
             <motion.div 
               key="activityBoxes"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: false }}
+              variants={cardVariants}
               className="flex flex-col gap-6"
             >
               <div className="flex items-center justify-between bg-black/50 border border-gray-800 p-4 rounded-xl">
@@ -153,9 +239,10 @@ export default function AktivitasPage() {
 
               {/* Panel Hasil Akhir Merah (KKL) dengan Counter Animasi */}
               <motion.div 
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5, duration: 0.5 }}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: false }}
+                variants={cardVariants}
                 className="mt-8 bg-red-900/20 border-2 border-red-500/50 rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-6 shadow-[0_0_20px_rgba(239,68,68,0.1)]"
               >
                 <div>
@@ -178,6 +265,6 @@ export default function AktivitasPage() {
         </AnimatePresence>
 
       </div>
-    </div>
+    </main>
   );
 }

@@ -40,46 +40,95 @@ function TypewriterText({ text }: { text: string }) {
 export default function DailyRecommendation({ targetMode, kaloriMasuk, kaloriKeluar, onSave }: DailyRecommendationProps) {
   
   const generateRecommendation = () => {
+    // Jika belum ada input kalori sama sekali
     if (kaloriMasuk === 0 && kaloriKeluar === 0) {
       return {
         status: "Belum Ada Data",
         pesan: "Silakan input Kalori Masuk (KKM) dan Kalori Keluar (KKL) Anda hari ini.",
         makanan: "-",
         olahraga: "-",
-        targetBesok: "Sesuai kebutuhan BMR Anda.",
+        targetBesok: "Sesuai kebutuhan kalori harian (BMR/TDEE) Anda.",
       };
     }
 
     const selisih = kaloriMasuk - kaloriKeluar;
+    // Normalisasi string agar tidak sensitif terhadap huruf besar/kecil (contoh: "BULKING" menjadi "bulking")
+    const modeNormalized = targetMode ? targetMode.trim().toLowerCase() : "";
 
-    if (targetMode === "Fat Loss") {
+    // ==========================================
+    // 1. KONDISI UNTUK METODE: FAT LOSS
+    // ==========================================
+    if (modeNormalized === "fat loss") {
       if (selisih < 0) {
         return {
           status: "🔥 Defisit Kalori Tercapai (Bagus!)",
-          pesan: "Kerja bagus! Anda membakar lebih banyak kalori daripada yang masuk.",
-          makanan: "Pertahankan asupan tinggi protein (Dada ayam, tempe) agar massa otot tidak turun.",
-          olahraga: "Lakukan Latihan Beban 30 menit, dilanjut Kardio ringan (jalan cepat).",
-          targetBesok: "Pertahankan defisit sekitar 300-500 kkal esok hari.",
+          pesan: "Kerja bagus! Anda berhasil membakar lebih banyak kalori daripada yang masuk. Program Fat Loss Anda berjalan optimal.",
+          makanan: "Pertahankan asupan tinggi protein (dada ayam, telur, tempe) agar massa otot tidak menyusut, serta perbanyak serat dari sayuran.",
+          olahraga: "Lakukan latihan beban (Weight Training) sekitar 30-45 menit untuk mempertahankan otot, lalu kombinasikan dengan kardio ringan (jalan cepat/sepeda).",
+          targetBesok: "Pertahankan konsistensi defisit kalori di kisaran 300-500 kkal esok hari.",
         };
       } else {
         return {
           status: "⚠️ Kalori Surplus (Perlu Evaluasi)",
-          pesan: "Asupan makan Anda hari ini melebihi kalori yang terbakar. Kurangi porsi besok.",
-          makanan: "Perbanyak sayur kaya serat dan kurangi konsumsi makanan berminyak atau manis.",
-          olahraga: "Tambah intensitas kardio (Running / HIIT) selama 45 menit untuk membakar sisa surplus.",
-          targetBesok: "Targetkan defisit kalori ketat esok hari.",
+          pesan: "Asupan kalori Anda hari ini melebihi kalori yang terbakar. Untuk menyukseskan Fat Loss, Anda memerlukan defisit kalori.",
+          makanan: "Perbanyak sayuran kaya serat, kurangi porsi karbohidrat simpleks, serta hindari makanan berminyak atau terlalu manis.",
+          olahraga: "Tingkatkan intensitas kardio esok hari (Running, Bersepeda, atau HIIT) selama 45 menit untuk membantu membakar sisa surplus energi.",
+          targetBesok: "Targetkan defisit kalori yang lebih disiplin dan ketat esok hari.",
         };
       }
     }
 
-    // Default Fallback jika mode lain dipilih
-    return {
-      status: "⚖️ Mode Pemeliharaan Berjalan",
-      pesan: "Pantau terus rasio asupan dan latihan Anda agar tubuh tetap seimbang.",
-      makanan: "Konsumsi karbohidrat kompleks, lemak sehat, dan protein seimbang.",
-      olahraga: "Lakukan olahraga fungsional atau yoga selama 30 menit.",
-      targetBesok: "Pertahankan kestabilan kalori netral.",
-    };
+    // ==========================================
+    // 2. KONDISI UNTUK METODE: BULKING
+    // ==========================================
+    if (modeNormalized === "bulking") {
+      if (selisih > 0) {
+        return {
+          status: "💪 Surplus Kalori Tercapai (Mantap!)",
+          pesan: "Luar biasa! Target surplus kalori berhasil dicapai. Tubuh Anda memiliki surplus energi yang ideal untuk membangun jaringan otot baru.",
+          makanan: "Utamakan sumber Clean Bulking: karbohidrat kompleks (nasi, kentang, oat), protein berkualitas tinggi, serta lemak sehat (alpukat, kacang-kacangan).",
+          olahraga: "Fokus pada latihan beban intensif (Hypertrophy / Strength Training) dengan prinsip progressive overload untuk merangsang sintesis otot.",
+          targetBesok: "Pertahankan surplus kalori bersih secara konsisten sekitar 200-400 kkal esok hari.",
+        };
+      } else {
+        return {
+          status: "⚠️ Kalori Defisit/Netral (Asupan Kurang)",
+          pesan: "Hari ini kalori Anda defisit atau netral. Untuk program Bulking, Anda membutuhkan surplus kalori agar otot dapat berkembang dengan optimal.",
+          makanan: "Tingkatkan porsi makan utama Anda atau tambahkan camilan padat kalori sehat seperti buah pisang dengan selai kacang atau susu protein.",
+          olahraga: "Tetap lakukan latihan beban dengan intensitas tinggi, namun batasi durasi kardio agar tidak membakar terlalu banyak kalori bulking Anda.",
+          targetBesok: "Naikkan asupan makanan padat nutrisi agar target surplus kalori tercapai esok hari.",
+        };
+      }
+    }
+
+    // ==========================================
+    // 3. KONDISI UNTUK METODE: MAINTENANCE (DEFAULT)
+    // ==========================================
+    if (Math.abs(selisih) <= 200) {
+      return {
+        status: "⚖️ Keseimbangan Kalori Terjaga",
+        pesan: "Sangat baik! Anda berhasil menjaga keseimbangan energi. Kalori masuk sebanding dengan kalori keluar untuk mempertahankan berat badan saat ini.",
+        makanan: "Konsumsi makanan dengan komposisi gizi seimbang (gizi makro dan mikro lengkap) untuk mendukung stabilitas metabolisme.",
+        olahraga: "Lakukan aktivitas fisik fungsional, yoga, atau latihan kebugaran umum selama 30-45 menit untuk menjaga stamina tubuh.",
+        targetBesok: "Pertahankan stabilitas kalori netral dan konsistensi latihan esok hari.",
+      };
+    } else if (selisih > 200) {
+      return {
+        status: "⚠️ Sedikit Surplus Kalori",
+        pesan: "Hari ini kalori masuk sedikit melebihi batas maintenance Anda. Kurangi sedikit asupan esok hari agar berat badan tetap stabil.",
+        makanan: "Batasi camilan manis atau porsi karbohidrat berlebih pada menu makan berikutnya.",
+        olahraga: "Tambahkan jalan santai atau aktivitas fisik tambahan berdurasi pendek hari ini untuk menyeimbangkan surplus.",
+        targetBesok: "Kembalikan asupan makanan ke porsi normal kalori harian (TDEE) Anda.",
+      };
+    } else {
+      return {
+        status: "⚠️ Sedikit Defisit Kalori",
+        pesan: "Pengeluaran kalori Anda sedikit lebih besar daripada asupannya. Tingkatkan sedikit asupan esok hari untuk mempertahankan berat badan.",
+        makanan: "Tambahkan porsi kecil makanan padat nutrisi atau konsumsi camilan sehat di antara jam makan.",
+        olahraga: "Latihan Anda hari ini sangat baik, pastikan energi yang masuk sepadan untuk pemulihan energi tubuh.",
+        targetBesok: "Tingkatkan porsi makan secara berkala agar mencapai status kalori netral.",
+      };
+    }
   };
 
   const recs = generateRecommendation();

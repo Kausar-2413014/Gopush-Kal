@@ -80,7 +80,7 @@ export default function KalkulatorPage() {
     if (activeUser) {
       localStorage.setItem(`gopushkal_kkm_today_${activeUser}`, grandTotalCalories.toString());
       alert(`Berhasil menyimpan ${grandTotalCalories} Kkal untuk hari ini!`);
-      router.push("/Dashboard");
+      router.push("/Aktivitas");
     } else {
       alert("Anda harus login terlebih dahulu.");
       router.push("/");

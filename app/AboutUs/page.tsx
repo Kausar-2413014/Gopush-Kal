@@ -222,7 +222,7 @@ export default function AboutUsPage() {
               whileHover={{ scale: 1.03, borderColor: "rgba(250, 204, 21, 0.5)" }}
               className="bg-[#0a0a0a] border border-gray-800 p-8 rounded-3xl flex flex-col sm:flex-row gap-6 items-center sm:items-start group transition-colors shadow-xl"
             >
-              <img src="/Kausar.jpg" alt="Foto Kausar" className="w-32 h-32 rounded-full object-cover border-4 border-yellow-400 shadow-xl group-hover:scale-105 transition-transform duration-300" />
+              <img src="Penguin.gif" alt="Foto Kausar" className="w-32 h-32 shrink-0 rounded-full object-cover border-4 border-yellow-400 shadow-xl group-hover:scale-105 transition-transform duration-300" />
               
               <div className="flex flex-col text-center sm:text-left">
                 <h3 className="text-xl font-bold text-white group-hover:text-yellow-400 transition-colors mb-1">Muhammad Kausar</h3>
@@ -247,10 +247,10 @@ export default function AboutUsPage() {
               whileHover={{ scale: 1.03, borderColor: "rgba(250, 204, 21, 0.5)" }}
               className="bg-[#0a0a0a] border border-gray-800 p-8 rounded-3xl flex flex-col sm:flex-row gap-6 items-center sm:items-start group transition-colors shadow-xl"
             >
-              <img src="/Samuel.jpg" alt="Foto Samuel" className="w-32 h-32 rounded-full object-cover border-4 border-yellow-400 shadow-xl group-hover:scale-105 transition-transform duration-300" />
+              <img src="Neuron.gif" alt="Foto Samuel" className="w-32 h-32 shrink-0 rounded-full object-cover border-4 border-yellow-400 shadow-xl group-hover:scale-105 transition-transform duration-300" />
               
               <div className="flex flex-col text-center sm:text-left">
-                <h3 className="text-xl font-bold text-white group-hover:text-yellow-400 transition-colors mb-1">Samuel G</h3>
+                <h3 className="text-xl font-bold text-white group-hover:text-yellow-400 transition-colors mb-1">Samuel Georgiou</h3>
                 <p className="text-yellow-400/80 font-semibold tracking-widest text-xs uppercase mb-3 bg-yellow-400/10 px-3 py-1 rounded inline-block self-center sm:self-start">UI/UX & Front-end Developer</p>
                 <div className="mb-4 pb-3 border-b border-gray-800">
                     <span className="text-sm font-semibold text-gray-200">Mahasiswa (SIB4A) - Sistem Informasi</span>

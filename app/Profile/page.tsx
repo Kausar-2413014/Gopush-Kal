@@ -75,20 +75,71 @@ export default function ProfilePage() {
     fetchUserData();
   };
 
+  // =========================================================================
+  // 🔥 FUNGSI SIMPAN YANG SUDAH DIPERBARUI DENGAN LOGIKA RESET TARGET BB
+  // =========================================================================
   const handleSave = () => {
-    const activeUsername = localStorage.getItem("gopushkal_currentUser");
+    if (!formData.namaLengkap || !formData.username || !formData.password) {
+      return alert("Mohon isi semua bidang utama!");
+    }
+
     const storedUsers = localStorage.getItem("gopushkal_users");
-    if (activeUsername && storedUsers) {
-      const users = JSON.parse(storedUsers);
+    if (storedUsers && user) {
+      let users = JSON.parse(storedUsers);
+
+      // Cek apakah target berat badan berubah dari nilai aslinya
+      const apakahTargetBBBerubah = Number(user.beratTarget) !== Number(formData.beratTarget);
+
+      // Jika target BB berubah, tanyakan konfirmasi ke pengguna karena ini sensitif
+      if (apakahTargetBBBerubah) {
+        const konfirmasi = window.confirm(
+          "Anda mengubah Target Berat Badan! Mengubah target berat badan akan mereset perkembangan Day serta seluruh riwayat statistik Anda demi kalkulasi target baru yang akurat. Lanjutkan?"
+        );
+        if (!konfirmasi) return; // batalkan proses simpan jika user menolak
+      }
+
       const updatedUsers = users.map((u: any) => {
-        if (u.username === activeUsername) {
-          return { ...u, ...formData };
+        if (u.username === user.username) {
+          // Buat objek data baru hasil update profile
+          const updatedUser = {
+            ...u,
+            namaLengkap: formData.namaLengkap,
+            username: formData.username,
+            password: formData.password,
+            beratSekarang: Number(formData.beratSekarang),
+            beratTarget: Number(formData.beratTarget),
+          };
+
+          // 🔥 JIKA TARGET BB BERUBAH, RESET HISTORY DAN DAY KEMBALI KE 1
+          if (apakahTargetBBBerubah) {
+            updatedUser.currentDay = 1;
+            updatedUser.history = [];
+            updatedUser.weightHistory = [];
+
+            // Bersihkan sisa log kkm/kkl hari ini di localStorage
+            localStorage.removeItem(`gopushkal_kkm_today_${user.username}`);
+            localStorage.removeItem(`gopushkal_kkl_today_${user.username}`);
+          }
+
+          return updatedUser;
         }
         return u;
       });
+
+      // Simpan ke LocalStorage & perbarui state agar UI langsung sinkron
       localStorage.setItem("gopushkal_users", JSON.stringify(updatedUsers));
-      setUser({ ...user, ...formData });
-      alert("Profil berhasil diperbarui!");
+      localStorage.setItem("gopushkal_currentUser", formData.username); // antisipasi kalau username ikut diganti
+
+      // Update state user di tampilan dengan data terbaru
+      const targetTerupdate = updatedUsers.find((u: any) => u.username === formData.username);
+      setUser(targetTerupdate);
+      setIsDirty(false);
+
+      alert(
+        apakahTargetBBBerubah
+          ? "Profil berhasil diperbarui dan progress riwayat Anda telah di-reset untuk target baru!"
+          : "Perubahan profil Anda berhasil disimpan!"
+      );
     }
   };
 

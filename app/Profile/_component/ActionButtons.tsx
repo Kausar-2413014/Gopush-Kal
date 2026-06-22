@@ -11,9 +11,22 @@ export default function ActionButtons({ user, onUpdate }: ActionButtonsProps) {
   const [showModeSelection, setShowModeSelection] = useState(false);
 
   const handlePilihMetode = (metodeBaru: string) => {
-    if (window.confirm(`Ganti target program ke "${metodeBaru}"? Ini akan mereset progress harian.`)) {
+    // 🔥 PESAN KONFIRMASI DIPERJELAS BAHWA RIWAYAT AKAN DIRESET
+    if (window.confirm(`Ganti target program ke "${metodeBaru}"? Ini akan mereset total seluruh riwayat progres harian & statistik Anda.`)) {
       const users = JSON.parse(localStorage.getItem("gopushkal_users") || "[]");
-      const updated = users.map((u: any) => u.username === user.username ? { ...u, targetKalori: metodeBaru, currentDay: 1 } : u);
+      
+      const updated = users.map((u: any) => 
+        u.username === user.username 
+          ? { 
+              ...u, 
+              targetKalori: metodeBaru, 
+              currentDay: 1,
+              history: [],        // 🔥 RESET RIWAYAT KALORI (KKM & KKL)
+              weightHistory: [],  // 🔥 RESET RIWAYAT BERAT BADAN MILESTONE
+            } 
+          : u
+      );
+      
       localStorage.setItem("gopushkal_users", JSON.stringify(updated));
       localStorage.removeItem(`gopushkal_kkm_today_${user.username}`);
       localStorage.removeItem(`gopushkal_kkl_today_${user.username}`);
@@ -24,23 +37,25 @@ export default function ActionButtons({ user, onUpdate }: ActionButtonsProps) {
 
   const handleHapusAkun = () => {
     if (window.confirm("HAPUS AKUN PERMANEN? Tindakan ini tidak bisa dibatalkan!")) {
-      const users = JSON.parse(localStorage.getItem("gopushkal_users") || "[]").filter((u: any) => u.username !== user.username);
-      localStorage.setItem("gopushkal_users", JSON.stringify(users));
+      const users = JSON.parse(localStorage.getItem("gopushkal_users") || "[]");
+      const filtered = users.filter((u: any) => u.username !== user.username);
+      localStorage.setItem("gopushkal_users", JSON.stringify(filtered));
       localStorage.removeItem("gopushkal_currentUser");
+      localStorage.removeItem(`gopushkal_kkm_today_${user.username}`);
+      localStorage.removeItem(`gopushkal_kkl_today_${user.username}`);
       router.push("/Login");
     }
   };
 
   return (
-    <div className="bg-[#0a0a0a] p-8 rounded-3xl border border-gray-800 shadow-2xl flex flex-col gap-6">
-      <h3 className="text-xl font-bold text-white text-center uppercase tracking-widest border-b border-gray-800 pb-4">Metode Program</h3>
-      
+    <div className="flex flex-col gap-4 mt-6">
       <AnimatePresence mode="wait">
         {showModeSelection ? (
           <motion.div 
-            key="selection" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
-            className="flex flex-col gap-2"
+            key="selection" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+            className="bg-black/50 border border-gray-800 p-4 rounded-2xl flex flex-col gap-2 shadow-inner"
           >
+            <p className="text-xs text-yellow-400 font-medium mb-1 text-center">Pilih Program Baru:</p>
             {['Fat Loss', 'Bulking', 'Maintenance'].map((mode) => (
               <button 
                 key={mode} 
@@ -69,9 +84,9 @@ export default function ActionButtons({ user, onUpdate }: ActionButtonsProps) {
       <motion.button 
         whileHover={{ scale: 1.02, backgroundColor: "#ef4444" }}
         onClick={handleHapusAkun}
-        className="w-full bg-transparent border-2 border-red-600 text-red-600 hover:text-white font-black py-5 rounded-2xl tracking-wider transition-all uppercase"
+        className="w-full bg-red-600/20 border border-red-500/40 text-red-500 font-bold py-4 rounded-2xl tracking-wider uppercase transition-all"
       >
-        🗑️ Hapus Akun Permanen
+        ⚠️ Hapus Akun Gopushkal
       </motion.button>
     </div>
   );

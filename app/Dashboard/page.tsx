@@ -57,17 +57,57 @@ export default function Dashboard() {
     }
   }, [router]);
 
+  // =========================================================================
+  // 🔥 PERUBAHAN DI SINI: LOGIKA PENYIMPANAN HISTORY UNTUK LINE CHART STATISTIK
+  // =========================================================================
   const handleNextDay = () => {
     const activeUsername = localStorage.getItem("gopushkal_currentUser");
     const storedUsers = localStorage.getItem("gopushkal_users");
     
     if(activeUsername && storedUsers) {
         let users = JSON.parse(storedUsers);
-        users = users.map((u: any) => u.username === activeUsername ? { ...u, currentDay: (u.currentDay || 1) + 1 } : u);
+        
+        users = users.map((u: any) => {
+          if (u.username === activeUsername) {
+            // 1. Ambil array riwayat lama atau inisialisasi array kosong jika belum ada
+            const currentHistory = u.history || [];
+            
+            // 2. Bungkus cetakan data kalori hari ini (KKM & KKL)
+            const todayLog = {
+              day: u.currentDay || 1,
+              kkm: kaloriMasuk, // Mengambil nilai dari state kaloriMasuk
+              kkl: kaloriKeluar  // Mengambil nilai dari state kaloriKeluar
+            };
+
+            // 3. Validasi penimpaan (Cek apakah progress day ini sudah pernah disimpan)
+            const existingIndex = currentHistory.findIndex((h: any) => h.day === u.currentDay);
+            let updatedHistory = [...currentHistory];
+            
+            if (existingIndex !== -1) {
+              updatedHistory[existingIndex] = todayLog; // Jika sudah ada, perbarui nilainya
+            } else {
+              updatedHistory.push(todayLog); // Jika belum ada, push object baru ke array
+            }
+
+            // 4. Return user dengan penambahan array history & penambahan hari (+1)
+            return { 
+              ...u, 
+              history: updatedHistory,
+              currentDay: (u.currentDay || 1) + 1 
+            };
+          }
+          return u;
+        });
+
+        // 5. Commit perubahan ke dalam Local Storage database
         localStorage.setItem("gopushkal_users", JSON.stringify(users));
         localStorage.removeItem(`gopushkal_kkm_today_${activeUsername}`);
         localStorage.removeItem(`gopushkal_kkl_today_${activeUsername}`);
-        window.location.reload();
+        
+        alert(`Progress Day ${currentDay} tersimpan! Dialihkan ke halaman Statistik.`);
+        
+        // 6. Alihkan user ke halaman Statistik agar Line Chart langsung ter-render otomatis
+        router.push("/Statistik");
     }
   };
 
@@ -211,7 +251,7 @@ export default function Dashboard() {
           </div>
         </div>
         <div className="flex gap-6 justify-between items-center font-semibold">
-          <Link href="/Dashboard" className="inline-blockinline-block px-3 py-1 bg-gray-900 text-yellow-400 rounded-md">Dashboard</Link>
+          <Link href="/Dashboard" className="inline-block px-3 py-1 bg-gray-900 text-yellow-400 rounded-md">Dashboard</Link>
           <Link href="/Kalkulator" className="inline-block transition-transform duration-300 hover:-translate-y-1 hover:opacity-80">KKM</Link>
           <Link href="/Statistik" className="inline-block transition-transform duration-300 hover:-translate-y-1 hover:opacity-80">Statistik</Link>
           <Link href="/Aktivitas" className="inline-block transition-transform duration-300 hover:-translate-y-1 hover:opacity-80">KKL</Link>

@@ -41,7 +41,7 @@ export default function DeveloperTeam() {
           >
             <div className="w-32 h-32 shrink-0 relative rounded-full overflow-hidden border-4 border-yellow-400 shadow-xl group-hover:scale-105 transition-transform duration-300">
               <Image 
-                src="/Penguin.gif" 
+                src="/gumball.gif" 
                 alt="Foto Kausar" 
                 fill
                 unoptimized

@@ -4,8 +4,13 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence, useMotionValue, useTransform, animate, Variants } from "framer-motion";
-// Import Tabler Icons bertema Alat/Debugger (Wrench diganti Pointer)
-import { IconSettings, IconPointer, IconKey, IconLayoutDashboard } from "@tabler/icons-react";
+import { 
+  IconSettings, 
+  IconPointer, 
+  IconKey, 
+  IconLayoutDashboard, 
+  IconDatabase 
+} from "@tabler/icons-react";
 
 // ==========================================
 // Komponen Pembantu: Counter Angka Animasi
@@ -24,157 +29,64 @@ function AnimatedCounter({ value }: { value: number }) {
 }
 
 // ==========================================
-// Komponen Pembantu: Ikon Mengambang Latar Belakang (Tema Alat)
+// Komponen Pembantu: Ikon Mengambang
 // ==========================================
 function FloatingDeveloperIcons() {
   const iconVariants: Variants = {
     hidden: { opacity: 0 },
     visible: { 
-      opacity: [0.1, 0.2, 0.1], // Denyut opacity halus
-      transition: { duration: 5, repeat: Infinity, ease: "easeInOut" }
+      opacity: [0.05, 0.15, 0.05], 
+      transition: { duration: 4, repeat: Infinity, ease: "easeInOut" }
     }
   };
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-0">
-      {/* Sisi Kiri */}
-      <motion.div 
-        className="absolute top-[20%] left-[8%] text-gray-700 hidden md:block"
-        initial="hidden"
-        animate="visible"
-        variants={iconVariants}
-        style={{ y: useTransform(useMotionValue(0), [0, 1], [0, -20]) }}
-      ><IconSettings size={70} /></motion.div>
-      
-      <motion.div 
-        className="absolute top-[60%] left-[5%] text-gray-600 hidden md:block"
-        initial="hidden"
-        animate="visible"
-        variants={iconVariants}
-        transition={{ delay: 1 }}
-        style={{ y: useTransform(useMotionValue(0), [0, 1], [0, 30]) }}
-      ><IconPointer size={80} /></motion.div>
-
-      <motion.div 
-        className="absolute bottom-[15%] left-[12%] text-gray-700 hidden md:block"
-        initial="hidden"
-        animate="visible"
-        variants={iconVariants}
-        transition={{ delay: 0.5 }}
-        style={{ y: useTransform(useMotionValue(0), [0, 1], [0, -15]) }}
-      ><IconKey size={60} /></motion.div>
-
-      {/* Sisi Kanan */}
-      <motion.div 
-        className="absolute top-[25%] right-[10%] text-gray-600 hidden md:block"
-        initial="hidden"
-        animate="visible"
-        variants={iconVariants}
-        transition={{ delay: 0.2 }}
-        style={{ y: useTransform(useMotionValue(0), [0, 1], [0, 25]) }}
-      ><IconPointer size={75} /></motion.div>
-
-      <motion.div 
-        className="absolute bottom-[20%] right-[12%] text-gray-700 hidden md:block"
-        initial="hidden"
-        animate="visible"
-        variants={iconVariants}
-        transition={{ delay: 1.5 }}
-        style={{ y: useTransform(useMotionValue(0), [0, 1], [0, 20]) }}
-      ><IconSettings size={80} /></motion.div>
+    <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden flex items-center justify-between px-20">
+      <motion.div variants={iconVariants} initial="hidden" animate="visible" className="text-gray-600">
+        <IconSettings size={150} />
+      </motion.div>
+      <motion.div variants={iconVariants} initial="hidden" animate="visible" className="text-gray-600">
+        <IconKey size={150} />
+      </motion.div>
     </div>
   );
 }
 
 // ==========================================
-// Komponen Pembantu: Animasi Intro Kedua Ikon Besar Bergabung
+// Komponen Pembantu: Layar Loading Intro
 // ==========================================
 function DeveloperIntro({ onComplete }: { onComplete: () => void }) {
-  
-  const iconVariants: Variants = {
-    hidden: { opacity: 0, scale: 0.2, y: 50 },
-    visible: (custom: { x: number }) => ({
-      opacity: 1, 
-      scale: 1, 
-      y: 0, 
-      x: custom.x,
-      transition: { type: "spring", stiffness: 100, delay: 0.3 }
-    }),
-    joined: {
-      scale: 1.1,
-      y: -10,
-      transition: { duration: 0.3, ease: "easeInOut" }
-    }
-  };
-
-  const textVariants: Variants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: { 
-      opacity: 1, 
-      y: 0, 
-      transition: { duration: 0.5, delay: 1.2 }
-    }
-  };
-
   useEffect(() => {
-    // Selesaikan intro setelah animasi teks selesai
     const timer = setTimeout(() => {
       onComplete();
-    }, 2800); // Durasi total intro
+    }, 1200);
     return () => clearTimeout(timer);
   }, [onComplete]);
 
   return (
     <motion.div 
-      initial={{ opacity: 1 }} 
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.5 }}
-      className="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center gap-12 font-mono overflow-hidden"
+      initial={{ opacity: 1 }}
+      exit={{ opacity: 0, transition: { duration: 0.5 } }}
+      className="min-h-screen bg-black flex flex-col items-center justify-center text-red-500 font-mono fixed inset-0 z-50"
     >
-      <div className="relative flex items-center justify-center gap-6">
-        {/* Gear Besar */}
-        <motion.div
-          custom={{ x: -25 }}
-          initial="hidden"
-          animate={["visible", "joined"]}
-          variants={iconVariants}
-          className="text-red-500"
-        ><IconSettings size={180} /></motion.div>
-        
-        {/* Pointer Besar (Pengganti Wrench) */}
-        <motion.div
-          custom={{ x: 25 }}
-          initial="hidden"
-          animate={["visible", "joined"]}
-          variants={iconVariants}
-          className="text-red-500"
-        ><IconPointer size={180} /></motion.div>
-      </div>
-
-      {/* Teks Intro */}
-      <motion.div 
-        initial="hidden"
-        animate="visible"
-        variants={textVariants}
-        className="text-center"
-      >
-        <h1 className="text-4xl font-bold text-red-500 tracking-wider">DEVELOPER SETTING</h1>
-        <p className="text-gray-400 mt-2">Gopushkal Local Environment Debugger</p>
-      </motion.div>
+      <IconSettings className="animate-spin mb-4" size={80} />
+      <h1 className="text-2xl md:text-3xl font-bold tracking-widest text-center px-4">
+        INITIALIZING DEBUGGER...
+      </h1>
     </motion.div>
   );
 }
 
 // ==========================================
-// Komponen Utama Halaman Developer Settings
+// KOMPONEN UTAMA HALAMAN
 // ==========================================
 export default function DeveloperSettingPage() {
+  // Ditambahkan tipe data <any[]> agar TypeScript tidak error
   const [users, setUsers] = useState<any[]>([]);
   const router = useRouter();
   const [isMounted, setIsMounted] = useState(false);
-  const [isLoading, setIsLoading] = useState(true); // State untuk mengontrol intro
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Mengambil data pengguna saat halaman dimuat
   useEffect(() => {
     setIsMounted(true);
     const storedUsers = localStorage.getItem("gopushkal_users");
@@ -183,24 +95,64 @@ export default function DeveloperSettingPage() {
     }
   }, []);
 
-  // Fungsi untuk membersihkan SELURUH data lokal
+  // --- Fungsi Hapus Data ---
   const handleWipeData = () => {
     const confirmWipe = window.confirm(
       "PERINGATAN: Anda yakin ingin menghapus SELURUH akun dan data pengguna? Tindakan ini tidak bisa dibatalkan."
     );
 
     if (confirmWipe) {
-      // Menghapus semua yang ada di localStorage
       localStorage.clear(); 
       setUsers([]);
       alert("Seluruh data (Akun, Kalori, Sesi) berhasil dihapus! Local Storage sekarang kosong.");
     }
   };
 
-  // Proteksi Hydration Error
+  // --- Fungsi Inject Data Acak (BARU) ---
+  const handleInjectRandomData = () => {
+    if (users.length === 0) {
+      alert("Tidak ada user terdaftar. Silakan register/buat akun terlebih dahulu di halaman Login.");
+      return;
+    }
+
+    const inputDay = window.prompt("Masukkan target Progress Day yang ingin di-generate (Contoh: 7, 10, atau 15):", "7");
+    
+    // Validasi input
+    if (!inputDay || isNaN(Number(inputDay))) return;
+    const targetDay = parseInt(inputDay);
+
+    const confirmInject = window.confirm(`Generate data random KKM & KKL dari Day 1 sampai Day ${targetDay} untuk semua user?`);
+    if (!confirmInject) return;
+
+    // Memodifikasi data user dengan data random KKM dan KKL
+    const updatedUsers = users.map((user: any) => {
+      const randomHistory = [];
+      
+      for (let i = 1; i <= targetDay; i++) {
+        randomHistory.push({
+          day: i,
+          kkm: Math.floor(Math.random() * (2500 - 1000 + 1)) + 1000, // Random KKM
+          kkl: Math.floor(Math.random() * (3000 - 1500 + 1)) + 1500, // Random KKL
+        });
+      }
+
+      return {
+        ...user,
+        currentDay: targetDay,
+        history: randomHistory
+      };
+    });
+
+    // Simpan ke Local Storage dan update State
+    localStorage.setItem("gopushkal_users", JSON.stringify(updatedUsers));
+    setUsers(updatedUsers);
+    
+    alert(`Berhasil inject data riwayat acak hingga Day ${targetDay}! Silakan cek halaman Statistik Anda.`);
+  };
+
+  // Menghindari Hydration Error di Next.js
   if (!isMounted) return <div className="min-h-screen bg-black" />;
 
-  // Variasi Animasi Masuk Konten Halaman
   const pageVariants: Variants = {
     hidden: { opacity: 0, y: 50 },
     visible: { 
@@ -212,16 +164,13 @@ export default function DeveloperSettingPage() {
 
   return (
     <AnimatePresence>
-      {/* Tampilkan Intro jika sedang memuat */}
       {isLoading ? (
         <DeveloperIntro key="intro" onComplete={() => setIsLoading(false)} />
       ) : (
         <main suppressHydrationWarning className="min-h-screen bg-black text-white p-8 font-mono relative overflow-x-hidden pt-28 pb-10">
           
-          {/* Ikon Mengambang Latar Belakang */}
           <FloatingDeveloperIcons />
 
-          {/* Konten Halaman Utama dengan Animasi Masuk */}
           <motion.div 
             initial="hidden"
             animate="visible"
@@ -245,27 +194,40 @@ export default function DeveloperSettingPage() {
               </Link>
             </div>
 
-            {/* Kontrol */}
+            {/* Kontrol Button Panel */}
             <motion.div 
               initial="hidden"
               whileInView="visible"
               viewport={{ once: false }}
               variants={pageVariants}
-              className="bg-[#111] p-6 rounded-xl border border-red-500/50 flex justify-between items-center gap-6 shadow-[0_0_20px_rgba(239,68,68,0.1)] flex-col md:flex-row"
+              className="bg-[#111] p-6 rounded-xl border border-red-500/50 flex flex-col md:flex-row justify-between items-center gap-6 shadow-[0_0_20px_rgba(239,68,68,0.1)]"
             >
               <div>
                 <h2 className="text-xl font-bold text-yellow-400">Database Pengguna</h2>
                 <p className="text-sm text-gray-400">
-                  Total Akun Terdaftar: <span className="font-bold text-red-500"><AnimatedCounter value={users.length} /></span>
+                  Total Akun Terdaftar: <span className="font-bold text-red-500">
+                    <AnimatedCounter value={users.length} />
+                  </span>
                 </p>
               </div>
-              <button 
-                onClick={handleWipeData}
-                className="bg-red-600 hover:bg-red-700 text-white font-bold px-6 py-3 rounded-lg shadow-[0_0_15px_rgba(255,0,0,0.4)] transition-colors text-lg flex items-center gap-3"
-              >
-                <IconPointer size={24} />
-                <span>🗑️ WIPE ALL DATA</span>
-              </button>
+              
+              {/* Group Tombol Aksi */}
+              <div className="flex flex-col sm:flex-row gap-4">
+                <button 
+                  onClick={handleInjectRandomData}
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-lg shadow-[0_0_15px_rgba(59,130,246,0.4)] transition-colors text-lg flex items-center gap-3"
+                >
+                  <IconDatabase size={24} />
+                  <span>🎲 INJECT RANDOM DATA</span>
+                </button>
+                <button 
+                  onClick={handleWipeData}
+                  className="bg-red-600 hover:bg-red-700 text-white font-bold px-6 py-3 rounded-lg shadow-[0_0_15px_rgba(255,0,0,0.4)] transition-colors text-lg flex items-center gap-3"
+                >
+                  <IconPointer size={24} />
+                  <span>🗑️ WIPE ALL DATA</span>
+                </button>
+              </div>
             </motion.div>
             
             {/* Tabel Data Users */}
@@ -289,7 +251,8 @@ export default function DeveloperSettingPage() {
                 </thead>
                 <tbody>
                   {users.length > 0 ? (
-                    users.map((user, index) => (
+                    // Penambahan tipe data (user: any, index: number) di sini menyelesaikan error ts(7006)
+                    users.map((user: any, index: number) => (
                       <tr key={index} className="hover:bg-gray-900 transition-colors">
                         <td className="p-4 border-b border-gray-800">{index + 1}</td>
                         <td className="p-4 border-b border-gray-800 font-bold text-blue-400">{user.username}</td>
